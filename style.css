@@ -1,0 +1,10 @@
+:root { --bg: #000; --accent: #0A84FF; --text: #fff; }
+body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-top: 50px; height: 100vh; box-sizing: border-box; overflow-x: hidden; transition: all 0.4s ease; }
+.header { text-align: center; margin-bottom: 30px; }
+h1 { margin: 0; font-size: 28px; background: linear-gradient(90deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+p { color: #a1a1aa; font-size: 14px; margin-top: 8px;}
+.grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+.card { background: #1c1c1e; border-radius: 20px; padding: 20px; text-align: center; border: 1px solid #2c2c2e; cursor:pointer;}
+.card svg { width: 32px; height: 32px; fill: var(--accent); margin-bottom: 10px; }
+.btn { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 16px; width: 100%; font-size: 16px; font-weight: 600; margin-top: 20px; cursor: pointer; }
+.btn-danger { background: #FF3B30; }
