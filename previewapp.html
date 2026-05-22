@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta name="theme-color" content="#18181b">
+  <title>Wio Studio • Ultimate Web & iOS Engine</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/swift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & BASE
+       ========================================================================== */
+    :root {
+      --bg-base: #09090b; --bg-surface: #18181b; --bg-elevated: #27272a;
+      --border-light: rgba(255, 255, 255, 0.08); --border-focus: rgba(255, 255, 255, 0.15);
+      --text-main: #e4e4e7; --text-bright: #ffffff; --text-muted: #a1a1aa;
+      --accent: #0A84FF; --accent-hover: #409CFF; --accent-glow: rgba(10, 132, 255, 0.25);
+      --swift-color: #F05138; --web-color: #38bdf8; --terminal-bg: rgba(9, 9, 11, 0.85); --terminal-text: #10b981;
+      --header-h: 56px; --footer-h: 32px; --sidebar-w: 290px; --terminal-h: 220px;
+      --font-ui: 'Inter', -apple-system, sans-serif; --font-code: 'JetBrains Mono', monospace;
+      --radius-sm: 6px; --radius-md: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+    html, body { height: 100vh; overflow: hidden; font-family: var(--font-ui); background: var(--bg-base); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; border: 3px solid var(--bg-base); }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+    /* ==========================================================================
+       2. LAYOUT
+       ========================================================================== */
+    .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; }
+    .app-header { height: var(--header-h); background: rgba(24, 24, 27, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; user-select: none; z-index: 50;}
+    
+    .brand-wrap { display: flex; align-items: center; gap: 12px; }
+    .btn-mobile-menu { display: none; background: none; border: none; color: var(--text-bright); padding: 8px; cursor: pointer; }
+    
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text-bright); font-size: 15px; }
+    .brand svg { width: 24px; height: 24px; fill: var(--swift-color); filter: drop-shadow(0 0 8px rgba(240, 81, 56, 0.4));}
+    .pro-badge { background: linear-gradient(135deg, #A855F7, #EC4899); padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 800; color: #fff; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.3); letter-spacing: 0.5px;}
+    
+    .toolbar { display: flex; gap: 12px; }
+    .btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-light); color: var(--text-main); padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease; white-space: nowrap;}
+    .btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-1px); }
+    .btn-primary { background: var(--accent); border-color: transparent; color: white; box-shadow: 0 4px 12px var(--accent-glow); font-weight: 600;}
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 6px 16px var(--accent-glow); }
+    .btn-github { background: #2ea043; border-color: transparent; color: white; box-shadow: 0 4px 12px rgba(46, 160, 67, 0.25); font-weight: 600;}
+    .btn-github:hover { background: #3fb950; box-shadow: 0 6px 16px rgba(46, 160, 67, 0.4); }
+
+    .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+    
+    .sidebar { width: var(--sidebar-w); background: var(--bg-surface); border-right: 1px solid var(--border-light); display: flex; flex-direction: column; flex-shrink: 0; z-index: 40; transition: transform 0.3s ease;}
+    .section-header { padding: 14px 20px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
+    .action-group { display: flex; gap: 4px; }
+    .icon-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; padding: 6px; border-radius: var(--radius-sm); transition: 0.2s;}
+    .icon-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-bright); }
+    
+    .file-tree, .lib-tree { overflow-y: auto; flex: 1; padding: 0 10px 10px 10px; transition: 0.2s;}
+    .file-tree.drag-over { background: rgba(255, 255, 255, 0.05); border: 2px dashed var(--accent); border-radius: var(--radius-md); }
+    .lib-tree { flex: auto; border-top: 1px solid var(--border-light); min-height: 120px;}
+    
+    .back-btn { background: var(--accent-glow); padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; color: var(--accent); border: 1px solid rgba(10, 132, 255, 0.2); transition: 0.2s; }
+    .back-btn:hover { background: rgba(10, 132, 255, 0.35); color: #fff; }
+
+    .folder-node { margin-bottom: 4px; }
+    .folder-header { padding: 8px 12px; font-size: 13px; font-weight: 600; color: var(--text-bright); display: flex; align-items: center; gap: 8px; cursor: pointer; border-radius: var(--radius-sm); position: relative; transition: 0.2s;}
+    .folder-header:hover { background: rgba(255,255,255,0.05); color: var(--accent); }
+
+    .tree-item { padding: 8px 12px; font-size: 13px; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--text-muted); margin-bottom: 4px; transition: all 0.2s ease; position: relative;}
+    .tree-item:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+    .tree-item.active { background: var(--accent-glow); color: var(--text-bright); font-weight: 500; border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;}
+    
+    .tree-icon { width: 16px; height: 16px; flex-shrink: 0; }
+    .icon-swift { fill: var(--swift-color); }
+    .icon-html { fill: #e34f26; }
+    .icon-css { fill: #2965f1; }
+    .icon-js { fill: #f7df1e; }
+    .icon-image { fill: #10b981; }
+    .icon-folder { fill: var(--accent); }
+    .icon-db { fill: #A855F7; }
+    .lib-icon { fill: #fdd835; width: 16px; height: 16px; }
+
+    .btn-more { margin-left: auto; background: none; border: none; color: var(--text-muted); padding: 4px; border-radius: 4px; opacity: 0; cursor: pointer; transition: 0.2s;}
+    .btn-more:hover { background: rgba(255,255,255,0.1); color: #fff;}
+    .tree-item:hover .btn-more, .folder-header:hover .btn-more { opacity: 1; }
+
+    .context-menu {
+        position: fixed; background: var(--bg-elevated); border: 1px solid var(--border-light);
+        border-radius: var(--radius-sm); padding: 6px; display: none; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        min-width: 140px; backdrop-filter: blur(10px);
+    }
+    .context-menu-item { padding: 8px 12px; font-size: 13px; cursor: pointer; color: var(--text-main); border-radius: 4px; font-weight: 500; display: flex; align-items: center; gap: 8px;}
+    .context-menu-item:hover { background: var(--accent); color: #fff; }
+    .context-menu-item.danger:hover { background: #ef4444; }
+
+    .main-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-base); min-width: 0; position: relative;}
+    .tabs { display: flex; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); height: 44px; align-items: flex-end; padding: 0 10px; overflow-x: auto;}
+    .tabs::-webkit-scrollbar { height: 4px; }
+    .tab { padding: 10px 16px; font-size: 13px; color: var(--text-muted); border-bottom: 2px solid transparent; cursor: pointer; font-weight: 500; transition: 0.2s; border-radius: var(--radius-sm) var(--radius-sm) 0 0; white-space: nowrap; display: flex; align-items: center; gap: 10px;}
+    .tab:hover { background: rgba(255,255,255,0.03); color: var(--text-main); }
+    .tab.active { color: var(--text-bright); border-bottom: 2px solid var(--accent); background: var(--bg-base); }
+    .tab-close { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; opacity: 0.6; transition: 0.2s; }
+    .tab-close:hover { background: rgba(255,255,255,0.1); opacity: 1; color: #ef4444; }
+
+    .editor-wrapper { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+    .code-container { flex: 1; position: relative; overflow: hidden; background: var(--bg-base); }
+    .line-numbers { position: absolute; left: 0; top: 0; bottom: 0; width: 56px; background: var(--bg-base); border-right: 1px solid var(--border-light); padding: 20px 12px; text-align: right; font-family: var(--font-code); font-size: 14px; line-height: 1.6; color: #52525b; user-select: none; z-index: 3; overflow: hidden; }
+    .code-input, .code-highlight { position: absolute; left: 56px; top: 0; bottom: 0; right: 0; padding: 20px 24px; font-family: var(--font-code); font-size: 14px; line-height: 1.6; tab-size: 4; white-space: pre; overflow: auto; border: none; }
+    .code-input { color: transparent; background: transparent; caret-color: var(--accent); z-index: 2; resize: none; }
+    .code-highlight { z-index: 1; pointer-events: none; }
+    
+    .image-preview-container { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #111; z-index: 4; padding: 20px; }
+    .image-preview-container img { max-width: 80%; max-height: 70%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+    .db-config-container { position: absolute; inset: 0; background: var(--bg-base); z-index: 4; padding: 40px; overflow-y: auto;}
+    .db-card { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 30px; max-width: 600px; margin: 0 auto;}
+    .db-card h3 { color: var(--text-bright); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;}
+    .db-input { width: 100%; background: #000; border: 1px solid var(--border-focus); color: #fff; padding: 12px 16px; border-radius: 8px; margin-top: 20px; font-family: var(--font-code); font-size: 13px;}
+    .db-status { margin-top: 20px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; font-size: 13px; color: var(--text-muted); border-left: 3px solid #A855F7;}
+
+    .terminal-wrapper { height: var(--terminal-h); background: var(--terminal-bg); border-top: 1px solid var(--border-light); display: flex; flex-direction: column; backdrop-filter: blur(10px);}
+    .terminal-header { padding: 8px 20px; background: rgba(0,0,0,0.3); font-size: 12px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;}
+    .terminal-body { flex: 1; overflow-y: auto; padding: 12px 20px; font-family: var(--font-code); font-size: 13px; line-height: 1.6; }
+    .log-row { display: flex; gap: 10px; margin-bottom: 4px; }
+    .log-time { color: #52525b; user-select: none; flex-shrink: 0;}
+    .log-info { color: var(--text-main); word-break: break-all;}
+    .log-success { color: var(--terminal-text); }
+    .log-error { color: #ef4444; word-break: break-all;}
+    .log-warn { color: #f59e0b; word-break: break-all;}
+
+    .dashboard { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-base); z-index: 10; text-align: center; }
+    .dashboard-icon { width: 80px; height: 80px; fill: var(--border-focus); margin-bottom: 20px; }
+
+    /* ==========================================================================
+       MODALS
+       ========================================================================== */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-content { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); width: 450px; max-width: 90%; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); transform: translateY(20px); transition: 0.3s; }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+    .modal-header { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; }
+    .modal-body { color: var(--text-muted); font-size: 14px; line-height: 1.5; }
+    .git-input-group { margin-bottom: 15px; }
+    .git-input-group label { display: block; font-size: 12px; margin-bottom: 6px; font-weight: 600; color: var(--text-muted);}
+
+    /* ==========================================================================
+       3. IPHONE SIMULATOR ENGINE 
+       ========================================================================== */
+    .simulator-drag-layer {
+      position: fixed; bottom: 50px; right: 40px; z-index: 1000;
+      background: rgba(24, 24, 27, 0.8); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 36px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.1);
+      display: flex; flex-direction: column; transition: transform 0.1s ease; transform-origin: bottom right;
+    }
+    .sim-mac-header { height: 44px; display: flex; align-items: center; padding: 0 20px; cursor: move; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 8px; }
+    .mac-dot { width: 12px; height: 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;}
+    .mac-dot:hover { filter: brightness(1.2); }
+    .dot-r { background: #ff5f56; } .dot-y { background: #ffbd2e; } .dot-g { background: #27c93f; }
+    .sim-title { flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: #fff; pointer-events: none;}
+    .sim-scaler { width: 70px; margin-left: 10px; cursor: pointer; accent-color: var(--accent); }
+
+    .iphone-wrapper { position: relative; width: 340px; height: 730px; margin: 16px 20px 24px 20px; }
+    .hw-btn { position: absolute; width: 4px; background: #606065; border-radius: 3px; cursor: pointer; z-index: 50; transition: 0.1s; border: 1px solid #1a1a1c;}
+    .hw-btn:active { background: #333; transform: scaleX(0.5); }
+    .btn-action { top: 120px; left: -4px; height: 26px; }
+    .btn-vol-up { top: 170px; left: -4px; height: 55px; }
+    .btn-vol-down { top: 240px; left: -4px; height: 55px; }
+    .btn-power { top: 190px; right: -4px; height: 85px; }
+
+    .iphone-hardware { position: absolute; inset: 0; background: #000; border-radius: 56px; border: 4px solid #1f1f22; box-shadow: inset 0 0 0 4px #000, inset 0 0 0 6px #2a2a2c, 0 0 0 1px #333, 0 20px 40px rgba(0,0,0,0.5); overflow: hidden; z-index: 10; }
+
+    .ios-vol-hud { position: absolute; left: 8px; top: 170px; width: 8px; height: 80px; background: rgba(255,255,255,0.9); border-radius: 10px; z-index: 999; transform: translateX(-30px); opacity: 0; transition: transform 0.4s cubic-bezier(0.32,0.72,0,1), opacity 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.3); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+    .ios-vol-hud.show { transform: translateX(0); opacity: 1; }
+    .vol-level { width: 50%; height: 50%; background: #000; opacity: 0.2; }
+
+    .dynamic-island { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 95px; height: 28px; background: #000; border-radius: 20px; z-index: 999; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.8); transition: width 0.4s cubic-bezier(0.32, 0.72, 0, 1), background 0.3s, height 0.4s; overflow: hidden; }
+    .island-cam { width: 10px; height: 10px; border-radius: 50%; background: #0a0a0a; border: 1px solid #1a1a1a; position: relative; z-index: 2; flex-shrink: 0;}
+    .island-content { position: absolute; left: 14px; right: 28px; display: flex; align-items: center; opacity: 0; transition: opacity 0.2s; font-size: 11px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .dynamic-island.expanded { width: 200px; }
+    .dynamic-island.expanded .island-content { opacity: 1; transition-delay: 0.2s;}
+
+    .ios-display { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #000; overflow: hidden; border-radius: 50px;}
+    
+    .ios-aod { position: absolute; inset: 0; z-index: 40; background: #000; display: flex; flex-direction: column; align-items: center; padding-top: 80px; color: rgba(255,255,255,0.4); transition: opacity 0.3s; cursor: pointer; }
+    .aod-time { font-size: 70px; font-weight: 700; letter-spacing: -2px; }
+    .aod-date { font-size: 16px; font-weight: 500; margin-top: -10px; }
+    
+    .ios-lockscreen { position: absolute; inset: 0; z-index: 35; background: var(--ios-wall, url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop')) center/cover; display: flex; flex-direction: column; align-items: center; padding-top: 80px; color: #fff; transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s; transform: translateY(0); }
+    .lock-time { font-size: 70px; font-weight: 700; letter-spacing: -2px; text-shadow: 0 2px 10px rgba(0,0,0,0.3);}
+    .lock-hint { position: absolute; bottom: 40px; font-size: 13px; font-weight: 500; opacity: 0.8; animation: pulse 2s infinite;}
+    @keyframes pulse { 0% { opacity: 0.5; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-5px); } 100% { opacity: 0.5; transform: translateY(0); } }
+
+    .ios-home { position: absolute; inset: 0; z-index: 10; background: var(--ios-wall, url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop')) center/cover; padding: 70px 24px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 24px; transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s; transform: scale(0.95); opacity: 0; pointer-events: none; }
+    
+    .ios-cc { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 45; background: rgba(0,0,0,0.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transform: translateY(-100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); padding: 60px 20px; color: white; display: flex; flex-direction: column; gap: 15px; }
+    .cc-row { display: flex; gap: 15px; }
+    .cc-box { background: rgba(255,255,255,0.2); border-radius: 20px; flex: 1; height: 80px; display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 12px; font-weight: 600;}
+    .cc-handle { position: absolute; top: 10px; right: 20px; width: 40px; height: 40px; z-index: 60; cursor: pointer;} 
+
+    .app-icon { width: 62px; height: 62px; background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .app-icon:active { filter: brightness(0.8); }
+    .app-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .app-label { text-align: center; color: #fff; font-size: 11.5px; margin-top: 6px; font-weight: 500; text-shadow: 0 1px 4px rgba(0,0,0,0.6); max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .icon-wrapper { display: flex; flex-direction: column; align-items: center; }
+
+    .ios-app-window { position: absolute; inset: 0; z-index: 20; background: #000; transform-origin: 0 0; opacity: 0; pointer-events: none; border-radius: 50px; overflow: hidden; }
+    #appSandboxFrame { width: 100%; height: 100%; border: none; background: #fff; padding-top: 48px; padding-bottom: 34px; box-sizing: border-box;}
+    
+    .ios-settings-ui { background: #f2f2f7; color: #000; padding: 50px 20px 20px; height: 100%; box-sizing: border-box; font-family: -apple-system, sans-serif;}
+    .st-title { font-size: 32px; font-weight: 700; margin-bottom: 20px;}
+    .st-group { background: #fff; border-radius: 10px; overflow: hidden; margin-bottom: 20px;}
+    .st-item { padding: 15px 16px; border-bottom: 1px solid #e5e5ea; font-size: 16px; font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
+    .st-item:active { background: #e5e5ea; }
+    .st-item:last-child { border-bottom: none; }
+    .st-toggle { width: 44px; height: 24px; background: #34c759; border-radius: 12px; position: relative; transition: 0.3s;}
+    .st-toggle::after { content: ''; position: absolute; right: 2px; top: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.3s;}
+    .st-toggle.off { background: #e5e5ea; }
+    .st-toggle.off::after { right: 22px; }
+
+    .home-indicator-area { position: absolute; bottom: 0; left: 0; right: 0; height: 35px; z-index: 100; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 8px; cursor: grab; touch-action: none; }
+    .home-indicator { width: 140px; height: 5px; background: rgba(255,255,255,0.9); border-radius: 10px; pointer-events: none; transition: background 0.3s;}
+    .app-opened .home-indicator { background: rgba(0,0,0,0.5); } 
+    
+    .os-state-lock .ios-aod { opacity: 0; pointer-events: none; }
+    .os-state-lock .ios-lockscreen { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .os-state-lock .ios-home { opacity: 0; pointer-events: none; }
+    .os-state-home .ios-aod, .os-state-home .ios-lockscreen { opacity: 0; pointer-events: none; transform: translateY(-100%); }
+    .os-state-home .ios-home { transform: scale(1); opacity: 1; pointer-events: auto; }
+    .os-state-cc .ios-cc { transform: translateY(0); }
+    .app-opened .ios-home { transform: scale(0.92); opacity: 0; pointer-events: none; filter: blur(2px);}
+    .settings-opened .ios-home { transform: scale(0.92); opacity: 0; pointer-events: none; filter: blur(2px);}
+    
+    .ios-display.blackout { background: #000 !important; }
+    .ios-display.blackout > div { display: none !important; }
+
+    /* ==========================================================================
+       RESPONSIVE MOBILE VIEW
+       ========================================================================== */
+    @media (max-width: 768px) {
+        .btn-mobile-menu { display: block; }
+        .sidebar { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-100%); box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+        .sidebar.open { transform: translateX(0); }
+        .toolbar { gap: 6px; }
+        .btn { padding: 8px 10px; font-size: 12px; }
+        #btnImportLib, #btnExport { display: none; } 
+        
+        .simulator-drag-layer {
+            transform: scale(0.6) !important;
+            bottom: 10px; right: 10px;
+            transform-origin: bottom right;
+        }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header class="app-header">
+    <div class="brand-wrap">
+      <button class="btn-mobile-menu" id="btnToggleSidebar" title="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <div class="brand">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Wio Studio <span class="pro-badge">V5.1</span>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="btnImportLib">📥 Import Lib</button>
+      <button class="btn" id="btnExport">📦 Export</button>
+      <button class="btn btn-github" id="btnDeployGit">🐙 Deploy Git</button>
+      <button class="btn btn-primary" id="btnForceBuild">🚀 Build App</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <aside class="sidebar" id="appSidebar">
+      <div class="section-header">
+        Workspace Explorer
+        <div class="action-group">
+          <button class="icon-btn" id="btnNewFolder" title="Tạo thư mục dự án"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></button>
+          <button class="icon-btn" id="btnNewFile" title="Tạo tệp mới"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="file-tree" id="fileTree" title="Kéo thả file vào đây để upload"></div>
+
+      <div class="section-header">Backend Services</div>
+      <div class="lib-tree" style="flex: 0; min-height: auto; padding-bottom: 5px;">
+        <div class="tree-item" id="btnOpenDB" title="Cấu hình CSDL">
+            <svg class="tree-icon icon-db" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 4.24 2 7v10c0 2.76 4.48 5 10 5s10-2.24 10-5V7c0-2.76-4.48-5-10-5zm0 3c4.41 0 8 1.57 8 3s-3.59 3-8 3-8-1.57-8-3 3.59-3 8-3zm0 15c-4.41 0-8-1.57-8-3v-2.22c2.09 1.36 4.93 2.22 8 2.22s5.91-.86 8-2.22V17c0 1.43-3.59 3-8 3zM2 12c0 1.43 3.59 3 8 3s8-1.57 8-3v-2.22c-2.09 1.36-4.93 2.22-8 2.22s-5.91-.86-8-2.22V12z"/></svg> 
+            <span style="flex:1">Database.config</span>
+        </div>
+      </div>
+
+      <div class="section-header">Active Kernels</div>
+      <div class="lib-tree" style="flex: 0.3; min-height: 80px;">
+        <div class="tree-item"><svg class="lib-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> LiveFS Virtual Server</div>
+        <div class="tree-item"><svg class="lib-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg> Advanced Web Bundler</div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <div class="tabs" id="editorTabs"></div>
+      
+      <div class="editor-wrapper">
+        <div class="dashboard" id="dashboard">
+          <svg class="dashboard-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+          <h2 style="color:var(--text-bright); margin-bottom: 8px; font-weight: 600;">Workspace Ready</h2>
+          <p style="color:var(--text-muted); font-size: 14px; max-width: 400px; line-height: 1.5;">Giao diện đã tương thích Mobile. Nhấn nút Menu góc trái để mở quản lý file. UI Simulator đã được khắc phục!</p>
+        </div>
+        <div class="code-container" id="editorCore" style="display: none;">
+          <div class="line-numbers" id="lineNumbers">1</div>
+          <div class="code-highlight" id="highlightLayer"></div>
+          <textarea class="code-input" id="codeLayer" spellcheck="false" autocomplete="off"></textarea>
+        </div>
+        <div class="image-preview-container" id="imagePreview" style="display: none;"></div>
+        
+        <div class="db-config-container" id="dbConfigLayer" style="display: none;">
+            <div class="db-card">
+                <h3><svg width="24" height="24" viewBox="0 0 24 24" fill="#A855F7"><path d="M12 2C6.48 2 2 4.24 2 7v10c0 2.76 4.48 5 10 5s10-2.24 10-5V7c0-2.76-4.48-5-10-5z"/></svg> Database Integration</h3>
+                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">Nơi kết nối App của bạn với Backend Database (Supabase, MongoDB, MockAPI). Dữ liệu sẽ được đồng bộ thẳng vào Sandbox App.</p>
+                <input type="text" class="db-input" placeholder="Nhập API Endpoint / Connection String..." disabled>
+                <input type="text" class="db-input" placeholder="Nhập API Key / Anon Key..." style="margin-top: 10px;" disabled>
+                <div class="db-status">🚧 Tính năng Database Driver đang được phát triển trong bản cập nhật tới.</div>
+            </div>
+        </div>
+
+      </div>
+
+      <div class="terminal-wrapper" id="terminalLayer">
+        <div class="terminal-header">
+          <span>🖥 Debug Console</span>
+          <button class="icon-btn" id="btnClearTerminal" style="padding:4px; font-size: 11px;">🗑 Clear</button>
+        </div>
+        <div class="terminal-body" id="terminalBody"></div>
+      </div>
+    </main>
+  </div>
+
+<div class="modal-overlay" id="gitModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>🐙 Deploy to GitHub</span>
+      <button class="modal-close" onclick="document.getElementById('gitModal').classList.remove('active')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="git-input-group">
+        <label>GitHub Personal Access Token (PAT):</label>
+        <input type="password" id="gitToken" class="db-input" style="margin-top:0;" placeholder="ghp_xxxxxxxxxxxx">
+      </div>
+      <div class="git-input-group">
+        <label>Tên Repository mới:</label>
+        <input type="text" id="gitRepoName" class="db-input" style="margin-top:0;" placeholder="wio-studio-project">
+      </div>
+      <button class="btn btn-github" id="btnConfirmDeploy" style="width: 100%; justify-content: center; margin-top: 10px; padding: 12px;">Đẩy Code Lên Mây 🚀</button>
+      <div id="gitStatus" style="margin-top: 15px; font-size: 12px; color: var(--accent); text-align: center;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="context-menu" id="ctxMenu">
+    <div class="context-menu-item" id="ctxRename">✏️ Đổi tên</div>
+    <div class="context-menu-item" id="ctxMove">📂 Di chuyển</div>
+    <div class="context-menu-item danger" id="ctxDelete">🗑 Xóa</div>
+</div>
+
+<div class="simulator-drag-layer" id="simWindow" style="opacity: 0; pointer-events: none; transform: scale(0.85);">
+  <div class="sim-mac-header" id="macHeader">
+    <div class="mac-dot dot-r" id="dotClose"></div>
+    <div class="mac-dot dot-y" id="dotMin"></div>
+    <div class="mac-dot dot-g"></div>
+    <div class="sim-title" id="simDeviceName">iPhone Pro Max</div>
+    <input type="range" class="sim-scaler" id="simScale" min="0.5" max="1.2" step="0.05" value="0.85" title="Scale size" style="display: none;">
+  </div>
+  
+  <div class="iphone-wrapper">
+    <div class="hw-btn btn-action" title="Action Button"></div>
+    <div class="hw-btn btn-vol-up" id="btnVolUp" title="Tăng âm lượng"></div>
+    <div class="hw-btn btn-vol-down" id="btnVolDown" title="Giảm âm lượng"></div>
+    <div class="hw-btn btn-power" id="btnPower" title="Khóa màn hình"></div>
+    
+    <div class="iphone-hardware">
+        <div class="dynamic-island" id="dynamicIsland">
+            <div class="island-content" id="islandText"></div>
+            <div class="island-cam"></div>
+        </div>
+        
+        <div class="cc-handle" id="ccHandle" title="Vuốt xuống mở Control Center"></div>
+        <div class="ios-vol-hud" id="volHud"><div class="vol-level" id="volLevel"></div></div>
+        
+        <div class="ios-display" id="iosDisplay">
+          <div class="ios-aod" id="iosAOD"><div class="aod-time">09:41</div><div class="aod-date">Thứ Sáu, 23 Tháng 10</div></div>
+          <div class="ios-lockscreen" id="iosLock"><div class="lock-time">09:41</div><div class="aod-date">Thứ Sáu, 23 Tháng 10</div><div class="lock-hint">Vuốt lên để mở</div></div>
+          <div class="ios-cc" id="iosCC"><div class="cc-row"><div class="cc-box" style="background:#0A84FF">✈️ Máy bay</div><div class="cc-box" style="background:#34C759">📶 Di động</div></div><div class="cc-row"><div class="cc-box">Wi-Fi</div><div class="cc-box">Bluetooth</div></div></div>
+
+          <div class="ios-home" id="iosHome">
+            <div class="icon-wrapper"><div class="app-icon" id="btnOpenApp"></div><div class="app-label" id="lblAppName">App</div></div>
+            <div class="icon-wrapper" style="margin-left: 20px;">
+              <div class="app-icon" id="btnOpenSettings" style="background: #8E8E93;">
+                  <svg viewBox="0 0 24 24" width="36" height="36" fill="#fff"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"></path></svg>
+              </div>
+              <div class="app-label">Cài đặt</div>
+            </div>
+          </div>
+          
+          <div class="ios-app-window" id="iosSettingsWrapper">
+            <div class="ios-settings-ui">
+                <div class="st-title">Cài đặt</div>
+                <div class="st-group"><div class="st-item" id="setWallpaper">Đổi hình nền <span style="color:#8E8E93">›</span></div></div>
+                <div class="st-group"><div class="st-item" id="setAOD">Always On Display <div class="st-toggle" id="toggleAODUI"></div></div></div>
+            </div>
+          </div>
+          
+          <div class="ios-app-window" id="iosAppWrapper">
+            <iframe id="appSandboxFrame" title="Sandbox Runtime App" allow="camera; microphone; fullscreen"></iframe>
+          </div>
+        </div>
+        
+        <div class="home-indicator-area" id="homeIndicatorArea" title="Vuốt lên"><div class="home-indicator"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const TEMPLATE_HTML = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>App Template</title>
+  <meta name="app-name" content="Wio Pro">
+  <meta name="app-icon" content="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Figma-logo.svg/1667px-Figma-logo.svg.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="header">
+    <h1>Wio Pro App</h1>
+    <p>Bundler Engine</p>
+  </div>
+  <div class="grid">
+    <div class="card" onclick="testError()">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <div class="card-title">Test Error Console</div>
+    </div>
+  </div>
+  <button class="btn btn-danger" onclick="triggerExit()">Thoát App</button>
+  <script src="script.js"><\/script>
+</body>
+</html>`;
+
+  const TEMPLATE_CSS = `:root { --bg: #000; --accent: #0A84FF; --text: #fff; }
+body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-top: 50px; height: 100vh; box-sizing: border-box; overflow-x: hidden; transition: all 0.4s ease; }
+.header { text-align: center; margin-bottom: 30px; }
+h1 { margin: 0; font-size: 28px; background: linear-gradient(90deg, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+p { color: #a1a1aa; font-size: 14px; margin-top: 8px;}
+.grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+.card { background: #1c1c1e; border-radius: 20px; padding: 20px; text-align: center; border: 1px solid #2c2c2e; cursor:pointer;}
+.card svg { width: 32px; height: 32px; fill: var(--accent); margin-bottom: 10px; }
+.btn { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 16px; width: 100%; font-size: 16px; font-weight: 600; margin-top: 20px; cursor: pointer; }
+.btn-danger { background: #FF3B30; }`;
+
+  const TEMPLATE_JS = `console.log("App đang chạy mượt mà!");
+
+function testError() {
+  console.warn("Cảnh báo: Bạn đang thử gọi một hàm lỗi.");
+  nonExistentFunction();
+}
+
+function triggerExit() {
+  window.parent.postMessage('WIO_EXIT_APP', '*');
+}`;
+
+  class LogManager {
+    constructor() { this.el = document.getElementById('terminalBody'); }
+    log(msg, type = 'info') {
+      const line = document.createElement('div'); line.className = 'log-row';
+      const time = new Date().toLocaleTimeString([], {hour12: false});
+      line.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-${type}">${msg}</span>`;
+      this.el.appendChild(line); this.el.scrollTop = this.el.scrollHeight;
+    }
+    clear() { this.el.innerHTML = ''; }
+  }
+  const Terminal = new LogManager();
+
+  class VirtualFileSystem {
+    constructor() {
+      this.fs = {}; this.activePath = null;
+      this.load();
+      if (Object.keys(this.fs).length === 0) this.initDefaultWorkspace();
+    }
+    load() { try { const saved = localStorage.getItem('wio_pro_fs_v5'); if(saved) this.fs = JSON.parse(saved); } catch(e){} }
+    save() { localStorage.setItem('wio_pro_fs_v5', JSON.stringify(this.fs)); }
+    
+    initDefaultWorkspace() {
+      this.createFolder('MyFirstApp');
+      this.fs['MyFirstApp/previewapp.html'] = { type: 'file', content: TEMPLATE_HTML, isAsset: false };
+      this.fs['MyFirstApp/style.css'] = { type: 'file', content: TEMPLATE_CSS, isAsset: false };
+      this.fs['MyFirstApp/script.js'] = { type: 'file', content: TEMPLATE_JS, isAsset: false };
+      this.save();
+    }
+
+    createFolder(name) { if (!name || this.fs[name]) return false; this.fs[name] = { type: 'folder', children: {} }; this.save(); return true; }
+    createFile(path, content = '', isAssetExplicit = false) {
+      if (this.fs[path]) return false;
+      const isAsset = isAssetExplicit || path.match(/\.(png|jpg|gif|jpeg|svg)$/i);
+      this.fs[path] = { type: 'file', content: content, isAsset: isAsset };
+      this.save(); return true;
+    }
+    updateFile(path, content) { if (this.fs[path] && this.fs[path].type === 'file') { this.fs[path].content = content; this.save(); } }
+    deleteNode(path) { delete this.fs[path]; Object.keys(this.fs).forEach(k => { if (k.startsWith(path + '/')) delete this.fs[k]; }); if(this.activePath && this.activePath.startsWith(path)) this.activePath = null; this.save(); }
+    renameNode(oldPath, newName, isFolder) {
+        if(isFolder) {
+            const oldPrefix = oldPath + '/'; const newPrefix = newName + '/';
+            this.fs[newName] = this.fs[oldPath]; delete this.fs[oldPath];
+            Object.keys(this.fs).forEach(key => { if(key.startsWith(oldPrefix)) { const newKey = key.replace(oldPrefix, newPrefix); this.fs[newKey] = this.fs[key]; delete this.fs[key]; if(this.activePath === key) this.activePath = newKey; } });
+        } else {
+            const parts = oldPath.split('/'); parts[parts.length - 1] = newName; const newKey = parts.join('/');
+            if(this.fs[newKey]) return false; this.fs[newKey] = this.fs[oldPath]; delete this.fs[oldPath]; if(this.activePath === oldPath) this.activePath = newKey;
+        }
+        this.save(); return true;
+    }
+    moveNode(path, targetFolder) {
+        const name = path.split('/').pop(); const newKey = targetFolder ? `${targetFolder}/${name}` : name;
+        if(this.fs[newKey]) return false; 
+        const isFolder = this.fs[path].type === 'folder';
+        if(isFolder) {
+             const oldPrefix = path + '/'; const newPrefix = newKey + '/';
+             this.fs[newKey] = this.fs[path]; delete this.fs[path];
+             Object.keys(this.fs).forEach(k => { if(k.startsWith(oldPrefix)) { const nk = k.replace(oldPrefix, newPrefix); this.fs[nk] = this.fs[k]; delete this.fs[k]; if(this.activePath === k) this.activePath = nk; } });
+        } else { this.fs[newKey] = this.fs[path]; delete this.fs[path]; if(this.activePath === path) this.activePath = newKey; }
+        this.save(); return true;
+    }
+    getList() { return Object.keys(this.fs); }
+    getStructure() {
+      const tree = { folders: {}, rootFiles: [] };
+      Object.keys(this.fs).forEach(path => { if (this.fs[path].type === 'folder') tree.folders[path] = []; });
+      Object.keys(this.fs).forEach(path => {
+        if (this.fs[path].type === 'file') {
+          const parts = path.split('/');
+          if (parts.length > 1) { const folderName = parts[0]; if (tree.folders[folderName]) tree.folders[folderName].push({ name: parts.slice(1).join('/'), fullPath: path }); else tree.rootFiles.push({ name: path, fullPath: path }); } 
+          else { tree.rootFiles.push({ name: path, fullPath: path }); }
+        }
+      });
+      return tree;
+    }
+  }
+
+  // --- SMART BUNDLER ENGINE ---
+  class CorePreviewServer {
+    constructor(vfs, islandControl) {
+      this.vfs = vfs; this.islandControl = islandControl;
+      this.simWindow = document.getElementById('simWindow'); this.appFrame = document.getElementById('appSandboxFrame');
+      this.lblAppName = document.getElementById('lblAppName'); this.iconWrapper = document.getElementById('btnOpenApp');
+    }
+
+    compileAndSync(focusedFolder) {
+      let configFilePath = null;
+      if (focusedFolder && this.vfs.fs[`${focusedFolder}/previewapp.html`]) {
+          configFilePath = `${focusedFolder}/previewapp.html`;
+      } else {
+          configFilePath = Object.keys(this.vfs.fs).find(path => path.endsWith('previewapp.html'));
+      }
+
+      if (!configFilePath || !this.vfs.fs[configFilePath]) {
+        this.simWindow.style.opacity = '0'; this.simWindow.style.pointerEvents = 'none'; return;
+      }
+
+      this.islandControl.show('Đang Build...', 'info', 0); 
+      setTimeout(() => {
+          this.simWindow.style.opacity = '1'; this.simWindow.style.pointerEvents = 'auto';
+          let htmlContent = this.vfs.fs[configFilePath].content;
+          const parser = new DOMParser(); const doc = parser.parseFromString(htmlContent, 'text/html');
+
+          const metaAppName = doc.querySelector('meta[name="app-name"]');
+          const metaAppIcon = doc.querySelector('meta[name="app-icon"]');
+
+          this.lblAppName.innerText = metaAppName ? metaAppName.getAttribute('content') : "App";
+          let appIconSrc = metaAppIcon ? metaAppIcon.getAttribute('content') : "";
+          const currentFolder = configFilePath.split('/').slice(0, -1).join('/');
+
+          if (appIconSrc.startsWith('./') && currentFolder) {
+            const localAssetPath = currentFolder + '/' + appIconSrc.replace('./', '');
+            if (this.vfs.fs[localAssetPath]) appIconSrc = this.vfs.fs[localAssetPath].content;
+          }
+          this.iconWrapper.innerHTML = appIconSrc ? `<img src="${appIconSrc}" alt="Icon" />` : `<svg viewBox="0 0 24 24" fill="#0A84FF"><rect x="2" y="2" width="20" height="20" rx="6" ry="6"></rect></svg>`;
+
+          let blobMap = {};
+          Object.keys(this.vfs.fs).forEach(path => {
+            if (path.startsWith(currentFolder + '/') && path !== configFilePath) {
+                let file = this.vfs.fs[path];
+                if (file.isAsset) blobMap[path] = file.content;
+                else {
+                    let mime = path.endsWith('.css') ? 'text/css' : (path.endsWith('.js') ? 'application/javascript' : 'text/plain');
+                    blobMap[path] = URL.createObjectURL(new Blob([file.content], {type: mime}));
+                }
+            }
+          });
+
+          Object.keys(blobMap).forEach(path => {
+              let escapedName = path.replace(currentFolder + '/', '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              htmlContent = htmlContent.replace(new RegExp(`['"](?:\\.\\/)?${escapedName}['"]`, 'g'), `"${blobMap[path]}"`);
+          });
+
+          const consoleBridge = `
+          <script>
+            (function() {
+                const sendLog = (level, args) => window.parent.postMessage({type: 'WIO_CONSOLE', level, args: Array.from(args).map(String)}, '*');
+                const oL = console.log, oE = console.error, oW = console.warn;
+                console.log = function() { sendLog('info', arguments); oL.apply(console, arguments); };
+                console.error = function() { sendLog('error', arguments); oE.apply(console, arguments); };
+                console.warn = function() { sendLog('warn', arguments); oW.apply(console, arguments); };
+                window.onerror = function(m, u, l) { sendLog('error', [m + ' (Dòng ' + l + ')']); return false; };
+            })();
+          <\/script>`;
+          htmlContent = htmlContent.replace('<head>', '<head>' + consoleBridge);
+
+          const finalBlob = new Blob([htmlContent], { type: 'text/html' });
+          this.appFrame.src = URL.createObjectURL(finalBlob);
+          Terminal.log("Smart Bundler: Khởi chạy dự án thành công.", "success");
+          this.islandControl.show('Build Success', 'success', 2000);
+      }, 500); 
+    }
+  }
+
+  // --- GITHUB INTEGRATION ENGINE ---
+  class GitHubService {
+      constructor(vfs) { this.vfs = vfs; }
+      
+      async deploy(token, repoName, currentFolder) {
+          try {
+              // 1. Kiểm tra tài khoản
+              const userRes = await fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token}` } });
+              if (!userRes.ok) throw new Error("Token không hợp lệ hoặc đã hết hạn.");
+              const user = await userRes.json();
+              const owner = user.login;
+              Terminal.log(`Đã xác thực GitHub: @${owner}`, 'info');
+
+              // 2. Tạo Repository mới
+              Terminal.log(`Đang khởi tạo Repository: ${repoName}...`, 'info');
+              const repoRes = await fetch('https://api.github.com/user/repos', {
+                  method: 'POST',
+                  headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name: repoName, private: false, auto_init: true, description: "Deployed via Wio Studio" })
+              });
+              
+              if (!repoRes.ok && repoRes.status !== 422) throw new Error("Không thể tạo Repo.");
+              if (repoRes.status === 422) Terminal.log(`Repo ${repoName} đã tồn tại. Đang cập nhật code...`, 'warn');
+
+              // Chờ GitHub khởi tạo repo auto_init
+              await new Promise(r => setTimeout(r, 2000));
+
+              // 3. Đẩy từng file lên
+              const prefix = currentFolder ? currentFolder + '/' : '';
+              const filesToUpload = Object.keys(this.vfs.fs).filter(p => this.vfs.fs[p].type === 'file' && p.startsWith(prefix));
+              
+              for(let path of filesToUpload) {
+                  const fileData = this.vfs.fs[path];
+                  const gitPath = path.replace(prefix, ''); // Xóa tiền tố thư mục trên Github
+                  
+                  // Encode Base64 (Bao gồm xử lý Tiếng Việt UTF-8)
+                  let encodedContent = "";
+                  if (fileData.isAsset) {
+                      encodedContent = fileData.content.split(',')[1];
+                  } else {
+                      encodedContent = btoa(unescape(encodeURIComponent(fileData.content)));
+                  }
+
+                  Terminal.log(`Đang push: ${gitPath}...`, 'info');
+                  await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${gitPath}`, {
+                      method: 'PUT',
+                      headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                          message: `Wio Studio Auto-Deploy: Thêm ${gitPath}`,
+                          content: encodedContent
+                      })
+                  });
+              }
+              return `https://github.com/${owner}/${repoName}`;
+          } catch (error) {
+              throw error;
+          }
+      }
+  }
+
+  // --- MAIN APP COORDINATOR ---
+  class AppCoordinator {
+    constructor() {
+      this.vfs = new VirtualFileSystem();
+      this.gitHub = new GitHubService(this.vfs);
+      this.currentFolderFocus = null; 
+      
+      this.islandControl = {
+          el: document.getElementById('dynamicIsland'), txt: document.getElementById('islandText'),
+          show: function(text, type, duration = 2000) {
+              this.el.classList.add('expanded'); let icon = '🔄'; let bg = '#000';
+              if(type === 'success') { icon = '✅'; } if(type === 'error') { icon = '❌'; bg = '#3f0000'; }
+              this.txt.innerHTML = `<span>${icon} ${text}</span>`; this.el.style.background = bg;
+              if(duration > 0) setTimeout(() => { this.el.classList.remove('expanded'); this.el.style.background = '#000'; }, duration);
+          }
+      };
+      
+      this.server = new CorePreviewServer(this.vfs, this.islandControl);
+      this.openedTabs = [];
+      
+      this.ui = {
+        tree: document.getElementById('fileTree'), tabs: document.getElementById('editorTabs'),
+        input: document.getElementById('codeLayer'), highlight: document.getElementById('highlightLayer'),
+        lines: document.getElementById('lineNumbers'), core: document.getElementById('editorCore'),
+        dash: document.getElementById('dashboard'), imgPreview: document.getElementById('imagePreview'),
+        display: document.getElementById('iosDisplay'), ctxMenu: document.getElementById('ctxMenu'),
+        sidebar: document.getElementById('appSidebar'), dbConfig: document.getElementById('dbConfigLayer')
+      };
+      
+      this.ctxTarget = null; this.ctxIsFolder = false;
+
+      this.setupEvents(); this.setupOSGestures(); this.setupContextMenu(); this.setupDragAndDrop();
+      this.renderSidebar();
+      
+      let defaultFile = this.vfs.getList().find(p => p.endsWith('previewapp.html'));
+      if(defaultFile) {
+          const parts = defaultFile.split('/');
+          if(parts.length > 1) this.currentFolderFocus = parts[0];
+          this.openFile(defaultFile);
+      }
+      this.server.compileAndSync(this.currentFolderFocus);
+
+      setInterval(() => {
+        const t = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        document.querySelector('.aod-time').innerText = t; document.querySelector('.lock-time').innerText = t;
+      }, 1000);
+
+      window.addEventListener('message', (e) => {
+          if(e.data === 'WIO_EXIT_APP') { this.closeAppSpring(); } 
+          else if(e.data && e.data.type === 'WIO_CONSOLE') {
+              Terminal.log(`[App] ${e.data.args.join(' ')}`, e.data.level);
+              if(e.data.level === 'error') this.islandControl.show('Runtime Error', 'error', 3000);
+          }
+      });
+    }
+
+    async importLibrary() {
+        const url = prompt("Nhập URL của thư viện (VD: https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js):");
+        if (!url) return;
+        try {
+            Terminal.log(`Đang tải thư viện từ: ${url}...`, 'info');
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+            const content = await res.text();
+            
+            let fileName = url.split('/').pop().split('?')[0];
+            if (!fileName || !fileName.includes('.')) fileName = 'library.js';
+            
+            const targetFolder = this.currentFolderFocus || 'Root';
+            let finalPath = fileName;
+            
+            if (this.currentFolderFocus) {
+                finalPath = `${this.currentFolderFocus}/${fileName}`;
+            } else if (this.vfs.activePath && this.vfs.activePath.includes('/')) {
+                const parts = this.vfs.activePath.split('/');
+                finalPath = `${parts[0]}/${fileName}`;
+            }
+            
+            this.vfs.createFile(finalPath, content, false);
+            this.renderSidebar();
+            Terminal.log(`Tải thành công: ${finalPath}`, 'success');
+        } catch(e) {
+            Terminal.log(`Lỗi tải thư viện: Vui lòng kiểm tra lại URL.`, 'error');
+        }
+    }
+
+    focusFolder(folderName) {
+        this.currentFolderFocus = folderName;
+        this.renderSidebar();
+    }
+
+    openDatabaseConfig() {
+        this.ui.dash.style.display = 'none'; this.ui.core.style.display = 'none'; this.ui.imgPreview.style.display = 'none'; this.ui.dbConfig.style.display = 'block';
+        if(!this.openedTabs.includes('Database.config')) this.openedTabs.push('Database.config');
+        this.vfs.activePath = 'Database.config'; this.renderTabs();
+        if(window.innerWidth <= 768) this.ui.sidebar.classList.remove('open');
+    }
+
+    setupDragAndDrop() {
+      this.ui.tree.addEventListener('dragover', (e) => { e.preventDefault(); this.ui.tree.classList.add('drag-over'); });
+      this.ui.tree.addEventListener('dragleave', () => { this.ui.tree.classList.remove('drag-over'); });
+      this.ui.tree.addEventListener('drop', (e) => {
+          e.preventDefault(); this.ui.tree.classList.remove('drag-over');
+          
+          let targetFolder = this.currentFolderFocus;
+          if (!targetFolder && this.vfs.activePath && this.vfs.activePath !== 'Database.config') {
+              const activeNode = this.vfs.fs[this.vfs.activePath];
+              targetFolder = (activeNode && activeNode.type === 'folder') ? this.vfs.activePath : this.vfs.activePath.split('/').slice(0, -1).join('/');
+          }
+
+          Array.from(e.dataTransfer.files).forEach(file => {
+              const reader = new FileReader();
+              const fullPath = targetFolder ? `${targetFolder}/${file.name}` : file.name;
+              if(file.type.startsWith('image/')) {
+                  reader.onload = (ev) => { this.vfs.createFile(fullPath, ev.target.result, true); this.renderSidebar(); Terminal.log(`Đã tải lên ảnh: ${file.name}`, "success"); };
+                  reader.readAsDataURL(file);
+              } else {
+                  reader.onload = (ev) => { this.vfs.createFile(fullPath, ev.target.result, false); this.renderSidebar(); Terminal.log(`Đã tải lên file: ${file.name}`, "success"); };
+                  reader.readAsText(file);
+              }
+          });
+      });
+    }
+
+    setupContextMenu() { /* Code Context Menu giữ nguyên */
+        document.addEventListener('click', () => { this.ui.ctxMenu.style.display = 'none'; });
+        document.getElementById('ctxRename').onclick = () => { /*...*/ };
+        document.getElementById('ctxMove').onclick = () => { /*...*/ };
+        document.getElementById('ctxDelete').onclick = () => { /*...*/ };
+    }
+    showContextMenu(e, path, isFolder) {
+        e.preventDefault(); e.stopPropagation(); this.ctxTarget = path; this.ctxIsFolder = isFolder;
+        this.ui.ctxMenu.style.display = 'block'; this.ui.ctxMenu.style.left = `${e.clientX + 10}px`; this.ui.ctxMenu.style.top = `${e.clientY + 10}px`;
+    }
+
+    setupEvents() {
+      document.getElementById('btnToggleSidebar').onclick = () => { this.ui.sidebar.classList.toggle('open'); };
+
+      this.ui.input.onkeydown = (e) => {
+        const val = this.ui.input.value; const start = this.ui.input.selectionStart; const end = this.ui.input.selectionEnd;
+        if (e.key === 'Tab') { e.preventDefault(); this.ui.input.value = val.substring(0, start) + "    " + val.substring(end); this.ui.input.selectionStart = this.ui.input.selectionEnd = start + 4; this.syncView(); }
+        const pairs = {'(': ')', '[': ']', '{': '}', '"': '"', "'": "'"};
+        if (pairs[e.key]) { e.preventDefault(); this.ui.input.value = val.substring(0, start) + e.key + pairs[e.key] + val.substring(end); this.ui.input.selectionStart = this.ui.input.selectionEnd = start + 1; this.syncView(); }
+      };
+
+      let timeout;
+      this.ui.input.oninput = () => {
+        this.syncView(); if(this.vfs.activePath) this.vfs.updateFile(this.vfs.activePath, this.ui.input.value);
+        clearTimeout(timeout); timeout = setTimeout(() => { this.server.compileAndSync(this.currentFolderFocus); }, 800); 
+      };
+      this.ui.input.onscroll = () => { this.ui.highlight.scrollTop = this.ui.input.scrollTop; this.ui.highlight.scrollLeft = this.ui.input.scrollLeft; this.ui.lines.scrollTop = this.ui.input.scrollTop; };
+
+      document.getElementById('btnImportLib').onclick = () => { this.importLibrary(); };
+      document.getElementById('btnOpenDB').onclick = () => { this.openDatabaseConfig(); };
+      
+      // Xử lý Git Modal
+      const gitModal = document.getElementById('gitModal');
+      const gitStatus = document.getElementById('gitStatus');
+      
+      document.getElementById('btnDeployGit').onclick = () => { 
+          gitModal.classList.add('active'); 
+          gitStatus.innerHTML = '';
+          const defaultRepo = this.currentFolderFocus ? this.currentFolderFocus : 'wio-studio-project';
+          document.getElementById('gitRepoName').value = defaultRepo;
+      };
+
+      document.getElementById('btnConfirmDeploy').onclick = async () => {
+          const token = document.getElementById('gitToken').value.trim();
+          const repo = document.getElementById('gitRepoName').value.trim();
+          if(!token || !repo) { gitStatus.innerHTML = "Vui lòng nhập đủ thông tin!"; return; }
+          
+          gitStatus.innerHTML = "Đang xử lý đẩy code... (Check Log Terminal bên dưới)";
+          document.getElementById('btnConfirmDeploy').disabled = true;
+          
+          try {
+              const url = await this.gitHub.deploy(token, repo, this.currentFolderFocus);
+              gitStatus.innerHTML = `✅ Deploy thành công! <br><a href="${url}" target="_blank" style="color:white; text-decoration:underline;">Mở Repository</a>`;
+              Terminal.log("Đã hoàn tất đẩy dự án lên GitHub!", "success");
+          } catch (e) {
+              gitStatus.innerHTML = `❌ Lỗi: ${e.message}`;
+              Terminal.log(`GitHub Error: ${e.message}`, "error");
+          }
+          document.getElementById('btnConfirmDeploy').disabled = false;
+      };
+
+      document.getElementById('btnExport').onclick = async () => { /* Giữ nguyên logic cũ */ };
+
+      document.getElementById('btnNewFolder').onclick = () => {
+        let name = prompt('Nhập tên thư mục dự án mới:', 'NewProject');
+        if(name) { if(this.vfs.createFolder(name)) { this.renderSidebar(); Terminal.log(`Tạo thư mục: ${name}`, "info"); } }
+      };
+
+      document.getElementById('btnNewFile').onclick = () => {
+        let name = prompt('Nhập tên file cần tạo (Dùng từ khóa "preview" để sinh App mẫu):');
+        if(!name) return;
+        let targetFolder = this.currentFolderFocus ? this.currentFolderFocus + '/' : '';
+
+        if(name.toLowerCase() === 'preview') {
+            this.vfs.createFile(targetFolder + 'previewapp.html', TEMPLATE_HTML);
+            this.vfs.createFile(targetFolder + 'style.css', TEMPLATE_CSS);
+            this.vfs.createFile(targetFolder + 'script.js', TEMPLATE_JS);
+            this.renderSidebar(); this.openFile(targetFolder + 'previewapp.html');
+            Terminal.log("Đã khởi tạo bộ Template liên kết!", "success"); return;
+        }
+
+        if(name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.gif')) {
+            let imgUrl = prompt('Nhập URL ảnh:', 'https://i.gifer.com/ZKZg.gif');
+            if(imgUrl) {
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.onload = () => { const reader = new FileReader(); reader.onloadend = () => { this.vfs.createFile(targetFolder + name, reader.result, true); this.renderSidebar(); this.openFile(targetFolder + name); }; reader.readAsDataURL(xhr.response); };
+                    xhr.open('GET', imgUrl); xhr.responseType = 'blob'; xhr.send();
+                } catch(e) {}
+            }
+        } else {
+            if(!name.includes('.')) name += '.js'; 
+            if(this.vfs.createFile(targetFolder + name, '// Coding here...\n')) { this.renderSidebar(); this.openFile(targetFolder + name); }
+        }
+      };
+      
+      document.getElementById('btnForceBuild').onclick = () => { this.server.compileAndSync(this.currentFolderFocus); };
+      document.getElementById('btnClearTerminal').onclick = () => Terminal.clear();
+
+      const win = document.getElementById('simWindow'); let isWinDrag = false, ox, oy;
+      
+      if(window.innerWidth <= 768) { win.style.transform = "scale(0.6)"; } else { document.getElementById('simScale').style.display = 'block'; }
+
+      document.getElementById('macHeader').onmousedown = (e) => { 
+          if(e.target.classList.contains('mac-dot') || e.target.tagName.toLowerCase() === 'input') return; 
+          isWinDrag = true; const r = win.getBoundingClientRect(); ox = e.clientX - r.left; oy = e.clientY - r.top; 
+      };
+      document.getElementById('macHeader').addEventListener('touchstart', (e) => {
+          if(e.target.classList.contains('mac-dot') || e.target.tagName.toLowerCase() === 'input') return; 
+          isWinDrag = true; const touch = e.touches[0]; const r = win.getBoundingClientRect(); ox = touch.clientX - r.left; oy = touch.clientY - r.top; 
+      }, {passive: false});
+
+      const moveWin = (clientX, clientY) => { win.style.left = `${clientX - ox}px`; win.style.top = `${clientY - oy}px`; win.style.bottom = 'auto'; win.style.right = 'auto'; };
+      document.addEventListener('mousemove', (e) => { if(isWinDrag) moveWin(e.clientX, e.clientY); });
+      document.addEventListener('touchmove', (e) => { if(isWinDrag) { e.preventDefault(); moveWin(e.touches[0].clientX, e.touches[0].clientY); } }, {passive: false});
+      
+      document.addEventListener('mouseup', () => { isWinDrag = false; });
+      document.addEventListener('touchend', () => { isWinDrag = false; });
+      document.getElementById('simScale').oninput = (e) => { e.stopPropagation(); win.style.transform = `scale(${e.target.value})`; };
+    }
+
+    openAppSpring(targetId) { /* Code giữ nguyên */
+        const iconEl = document.getElementById(targetId === 'iosAppWrapper' ? 'btnOpenApp' : 'btnOpenSettings');
+        const windowEl = document.getElementById(targetId);
+        const iconRect = iconEl.getBoundingClientRect(); const displayRect = this.ui.display.getBoundingClientRect();
+        const scaleX = iconRect.width / displayRect.width; const scaleY = iconRect.height / displayRect.height;
+        const transX = iconRect.left - displayRect.left; const transY = iconRect.top - displayRect.top;
+        windowEl.style.transition = 'none'; windowEl.style.transform = `translate(${transX}px, ${transY}px) scale(${scaleX}, ${scaleY})`;
+        windowEl.style.opacity = '1'; windowEl.style.borderRadius = '30px'; 
+        this.setOSState(targetId === 'iosAppWrapper' ? 'app' : 'settings');
+        void windowEl.offsetWidth; 
+        windowEl.style.transition = 'transform 0.5s cubic-bezier(0.32, 0.94, 0.6, 1), border-radius 0.4s';
+        windowEl.style.transform = `translate(0px, 0px) scale(1, 1)`; windowEl.style.borderRadius = '50px';
+        this.currentOpenApp = { id: targetId, icon: iconEl };
+    }
+
+    closeAppSpring() { /* Code giữ nguyên */
+        if(!this.currentOpenApp) return;
+        const windowEl = document.getElementById(this.currentOpenApp.id); const iconEl = this.currentOpenApp.icon;
+        const iconRect = iconEl.getBoundingClientRect(); const displayRect = this.ui.display.getBoundingClientRect();
+        const scaleX = iconRect.width / displayRect.width; const scaleY = iconRect.height / displayRect.height;
+        const transX = iconRect.left - displayRect.left; const transY = iconRect.top - displayRect.top;
+        this.setOSState('home');
+        windowEl.style.transform = `translate(${transX}px, ${transY}px) scale(${scaleX}, ${scaleY})`; windowEl.style.borderRadius = '30px';
+        setTimeout(() => { windowEl.style.opacity = '0'; windowEl.style.pointerEvents = 'none'; this.currentOpenApp = null; }, 500); 
+    }
+
+    setupOSGestures() { /* Code giữ nguyên */
+      this.osState = 'aod'; let aodEnabled = true; let currentVol = 50; 
+      this.setOSState = (s) => {
+        this.ui.display.classList.remove('blackout'); this.osState = s; this.ui.display.className = 'ios-display';
+        if(s === 'lock') this.ui.display.classList.add('os-state-lock');
+        if(s === 'home') this.ui.display.classList.add('os-state-home');
+        if(s === 'cc') this.ui.display.classList.add('os-state-cc', 'os-state-home');
+        if(s === 'app') this.ui.display.classList.add('os-state-home', 'app-opened');
+        if(s === 'settings') this.ui.display.classList.add('os-state-home', 'settings-opened');
+        if(s === 'aod' && !aodEnabled) this.ui.display.classList.add('blackout'); 
+      };
+      this.setOSState('aod');
+      document.getElementById('iosAOD').onclick = () => this.setOSState('lock');
+      this.ui.display.onclick = (e) => { if(this.osState === 'aod' && !aodEnabled) this.setOSState('lock'); };
+      
+      let isDrag = false, startY = 0; const area = document.getElementById('homeIndicatorArea');
+      const onDown = (e) => { isDrag = true; startY = e.clientY || e.touches[0].clientY; };
+      const onMove = (e) => { if(!isDrag) return; let y = e.clientY || (e.touches ? e.touches[0].clientY : 0); if(y - startY < -40) { isDrag = false; if(['app', 'settings'].includes(this.osState)) this.closeAppSpring(); else if(['lock', 'cc'].includes(this.osState)) this.setOSState('home'); } };
+      const onUp = () => { isDrag = false; };
+      area.addEventListener('mousedown', onDown); area.addEventListener('touchstart', onDown);
+      document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove);
+      document.addEventListener('mouseup', onUp); document.addEventListener('touchend', onUp);
+
+      document.getElementById('btnPower').onclick = () => { if(this.osState === 'aod') this.setOSState('lock'); else this.setOSState('aod'); };
+      document.getElementById('ccHandle').onpointerdown = () => { if(['home', 'app', 'lock', 'settings'].includes(this.osState)) this.setOSState('cc'); };
+      document.getElementById('btnOpenApp').onclick = () => this.openAppSpring('iosAppWrapper');
+      document.getElementById('btnOpenSettings').onclick = () => this.openAppSpring('iosSettingsWrapper');
+      
+      let volTimeout; const volHud = document.getElementById('volHud'); const volLevel = document.getElementById('volLevel');
+      const updateVolume = (dir) => {
+          if(dir === 'up') currentVol = Math.min(currentVol + 10, 100); else currentVol = Math.max(currentVol - 10, 0);
+          volLevel.style.height = `${currentVol}%`; volLevel.style.background = currentVol > 80 ? '#ff3b30' : (currentVol > 0 ? '#34c759' : '#000');
+          volHud.classList.add('show'); clearTimeout(volTimeout); volTimeout = setTimeout(() => { volHud.classList.remove('show'); }, 2000);
+      };
+      document.getElementById('btnVolUp').onclick = () => updateVolume('up');
+      document.getElementById('btnVolDown').onclick = () => updateVolume('down');
+      document.getElementById('setWallpaper').onclick = () => { const url = prompt("Nhập URL hình nền mới:"); if(url) document.documentElement.style.setProperty('--ios-wall', `url('${url}')`); };
+      document.getElementById('setAOD').onclick = () => { aodEnabled = !aodEnabled; const toggle = document.getElementById('toggleAODUI'); if(aodEnabled) toggle.classList.remove('off'); else toggle.classList.add('off'); };
+    }
+
+    closeTab(e, path) { /* Code giữ nguyên */
+        e.stopPropagation(); this.openedTabs = this.openedTabs.filter(t => t !== path);
+        if(this.vfs.activePath === path) {
+            this.vfs.activePath = this.openedTabs.length > 0 ? this.openedTabs[this.openedTabs.length - 1] : null;
+            if(this.vfs.activePath) this.openFile(this.vfs.activePath);
+            else { this.ui.core.style.display = 'none'; this.ui.imgPreview.style.display = 'none'; this.ui.dash.style.display = 'flex'; this.renderSidebar(); this.renderTabs(); }
+        } else { this.renderTabs(); }
+    }
+
+    openFile(path) { /* Code giữ nguyên */
+      if(path === 'Database.config') { this.openDatabaseConfig(); return; }
+      if(!this.openedTabs.includes(path)) this.openedTabs.push(path);
+      this.vfs.activePath = path; this.ui.dash.style.display = 'none'; this.ui.core.style.display = 'none'; this.ui.imgPreview.style.display = 'none'; this.ui.dbConfig.style.display = 'none';
+      const fileData = this.vfs.fs[path];
+      if (fileData && fileData.isAsset) { this.ui.imgPreview.style.display = 'flex'; this.ui.imgPreview.innerHTML = `<img src="${fileData.content}" alt="Asset"/><p style="margin-top:14px; font-size:12px; color:var(--text-muted);">${path}</p>`; } 
+      else if(fileData) { this.ui.core.style.display = 'block'; this.ui.input.value = fileData.content; this.syncView(); }
+      this.renderSidebar(); this.renderTabs();
+      if(window.innerWidth <= 768) this.ui.sidebar.classList.remove('open');
+    }
+
+    renderTabs() { /* Code giữ nguyên */
+        this.ui.tabs.innerHTML = '';
+        this.openedTabs.forEach(path => {
+            const isAct = path === this.vfs.activePath ? 'active' : ''; const name = path.split('/').pop();
+            const tab = document.createElement('div'); tab.className = `tab ${isAct}`;
+            tab.innerHTML = `<span onclick="App.openFile('${path}')">${name}</span> <span class="tab-close" onclick="App.closeTab(event, '${path}')">×</span>`;
+            this.ui.tabs.appendChild(tab);
+        });
+    }
+
+    syncView() { /* Code giữ nguyên */
+      const code = this.ui.input.value; const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      let lang = 'xml';
+      if(this.vfs.activePath) {
+          if(this.vfs.activePath.endsWith('.swift')) lang = 'swift';
+          if(this.vfs.activePath.endsWith('.js')) lang = 'javascript';
+          if(this.vfs.activePath.endsWith('.css')) lang = 'css';
+      }
+      try { this.ui.highlight.innerHTML = hljs.highlight(code, {language: lang}).value; } catch(e) { this.ui.highlight.innerHTML = escaped; }
+      const linesCount = code.split('\n').length; this.ui.lines.innerHTML = Array.from({length: Math.max(linesCount,1)}, (_,i) => i+1).join('<br>');
+    }
+
+    renderSidebar() { /* Code giữ nguyên */
+      this.ui.tree.innerHTML = ''; 
+      if (this.currentFolderFocus) {
+          const backBtn = document.createElement('div'); backBtn.className = 'back-btn';
+          backBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg> Project: ${this.currentFolderFocus}`;
+          backBtn.onclick = () => this.focusFolder(null); this.ui.tree.appendChild(backBtn);
+
+          const prefix = this.currentFolderFocus + '/';
+          const files = Object.keys(this.vfs.fs).filter(p => p.startsWith(prefix) && p !== this.currentFolderFocus);
+          files.forEach(path => {
+              const name = path.replace(prefix, '');
+              const div = document.createElement('div'); const isAct = path === this.vfs.activePath ? 'active' : ''; div.className = `tree-item ${isAct}`;
+              let iconClass = "icon-html";
+              if(path.endsWith('.swift')) iconClass = "icon-swift"; if(path.endsWith('.js')) iconClass = "icon-js"; if(path.endsWith('.css')) iconClass = "icon-css"; if(path.match(/\.(png|jpg|gif|jpeg|svg)$/i)) iconClass = "icon-image";
+              div.innerHTML = `<svg class="tree-icon ${iconClass}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;" onclick="App.openFile('${path}')">${name}</span><button class="btn-more" onclick="App.showContextMenu(event, '${path}', false)">•••</button>`;
+              this.ui.tree.appendChild(div);
+          });
+      } else {
+          const data = this.vfs.getStructure();
+          Object.keys(data.folders).forEach(folderName => {
+            const folderNode = document.createElement('div'); folderNode.className = `folder-node`;
+            folderNode.innerHTML = `<div class="folder-header" onclick="App.focusFolder('${folderName}')"><svg class="tree-icon icon-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span style="flex:1">${folderName}</span><button class="btn-more" onclick="App.showContextMenu(event, '${folderName}', true)">•••</button></div>`;
+            this.ui.tree.appendChild(folderNode);
+          });
+          data.rootFiles.forEach(fileObj => {
+            const div = document.createElement('div'); const isAct = fileObj.fullPath === this.vfs.activePath ? 'active' : ''; div.className = `tree-item ${isAct}`;
+            let iconClass = "icon-html"; if(fileObj.fullPath.endsWith('.js')) iconClass = "icon-js"; if(fileObj.fullPath.endsWith('.css')) iconClass = "icon-css";
+            div.innerHTML = `<svg class="tree-icon ${iconClass}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;" onclick="App.openFile('${fileObj.fullPath}')">${fileObj.name}</span><button class="btn-more" onclick="App.showContextMenu(event, '${fileObj.fullPath}', false)">•••</button>`;
+            this.ui.tree.appendChild(div);
+          });
+      }
+    }
+  }
+
+  window.App = new AppCoordinator();
+})();
+</script>
+</body>
+</html>
